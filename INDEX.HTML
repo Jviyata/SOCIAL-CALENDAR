@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Calendar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(90deg, #4b7bf5 0%, #d4af37 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .login-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .login-btn {
+            background-color: white;
+            color: #333;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: linear-gradient(180deg, #e57373 0%, #9575cd 100%);
+            padding: 20px;
+            color: white;
+        }
+        
+        .sidebar h2 {
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .filter-section {
+            margin-top: 20px;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .filter-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .filter-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .filter-btn.active {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .calendar-section {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .month-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .month-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .nav-btn {
+            background: none;
+            border: 1px solid #ccc;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .add-event-btn {
+            background-color: white;
+            border: 1px solid #333;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .calendar-grid {
+            border-top: 1px solid #eee;
+        }
+        
+        .week-days {
+            display: flex;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .week-day {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            background-color: #f1f1f1;
+        }
+        
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(100px, auto);
+        }
+        
+        .calendar-day {
+            border: 1px solid #eee;
+            padding: 5px;
+            min-height: 100px;
+        }
+        
+        .day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background-color: #4b7bf5;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>Social Calendar</h1>
+            <div class="login-section">
+                <span>Guest</span>
+                <button class="login-btn">Login</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <h2>Upcoming Events</h2>
+                <div class="filter-section">
+                    <h2>Filter by Category</h2>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active">All</button>
+                        <button class="filter-btn">Self-Care</button>
+                        <button class="filter-btn">Professional</button>
+                        <button class="filter-btn">Social</button>
+                        <button class="filter-btn">Friends & Family</button>
+                        <button class="filter-btn">Entertainment</button>
+                        <button class="filter-btn">Clubs & Organizations</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <div class="month-nav">
+                        <button class="nav-btn" id="prev-month">&#8249;</button>
+                        <h2 class="month-title" id="current-month">March 2025</h2>
+                        <button class="nav-btn" id="next-month">&#8250;</button>
+                    </div>
+                    <button class="add-event-btn" id="add-event-btn">+ Add Event</button>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="week-days">
+                        <div class="week-day">Sun</div>
+                        <div class="week-day">Mon</div>
+                        <div class="week-day">Tue</div>
+                        <div class="week-day">Wed</div>
+                        <div class="week-day">Thu</div>
+                        <div class="week-day">Fri</div>
+                        <div class="week-day">Sat</div>
+                    </div>
+                    <div class="calendar-days" id="calendar-days">
+                        <!-- Calendar days will be inserted here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="event-modal">
+        <div class="modal-content">
+            <h2>Add New Event</h2>
+            <form id="event-form">
+                <div class="form-group">
+                    <label for="event-title">Event Title</label>
+                    <input type="text" id="event-title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="event-date">Date</label>
+                    <input type="date" id="event-date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="event-time">Time</label>
+                    <input type="time" id="event-time">
+                </div>
+                
+                <div class="form-group">
+                    <label for="event-category">Category</label>
+                    <select id="event-category">
+                        <option value="self-care">Self-Care</option>
+                        <option value="professional">Professional</option>
+                        <option value="social">Social</option>
+                        <option value="family">Friends & Family</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="clubs">Clubs & Organizations</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="event-description">Description</label>
+                    <textarea id="event-description"></textarea>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Current date
+            let currentDate = new Date();
+            
+            // Initialize calendar
+            renderCalendar(currentDate);
+            
+            // Event listeners
+            document.getElementById('prev-month').addEventListener('click', prevMonth);
+            document.getElementById('next-month').addEventListener('click', nextMonth);
+            document.getElementById('add-event-btn').addEventListener('click', openEventModal);
+            document.getElementById('cancel-btn').addEventListener('click', closeEventModal);
+            document.getElementById('event-form').addEventListener('submit', handleEventSubmit);
+            
+            // Filter buttons
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                });
+            });
+        });
+        
+        // Sample events
+        const events = [];
+        
+        function renderCalendar(date) {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            
+            // Update month title
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('current-month').textContent = `${monthNames[month]} ${year}`;
+            
+            // Get first day of month and total days
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            // Clear previous calendar days
+            const calendarDays = document.getElementById('calendar-days');
+            calendarDays.innerHTML = '';
+            
+            // Add empty cells for days before start of month
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('calendar-day');
+                calendarDays.appendChild(dayElement);
+            }
+            
+            // Add days of current month
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('calendar-day');
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.classList.add('day-number');
+                dayNumber.textContent = i;
+                dayElement.appendChild(dayNumber);
+                
+                // Add events for this day if any
+                const currentDay = new Date(year, month, i);
+                const formattedDate = formatDate(currentDay);
+                const dayEvents = events.filter(event => event.date === formattedDate);
+                
+                dayEvents.forEach(event => {
+                    const eventElement = document.createElement('div');
+                    eventElement.textContent = event.title;
+                    eventElement.style.backgroundColor = getCategoryColor(event.category);
+                    eventElement.style.color = 'white';
+                    eventElement.style.padding = '2px 5px';
+                    eventElement.style.borderRadius = '3px';
+                    eventElement.style.marginBottom = '2px';
+                    eventElement.style.fontSize = '0.8rem';
+                    dayElement.appendChild(eventElement);
+                });
+                
+                calendarDays.appendChild(dayElement);
+            }
+            
+            // Fill remaining cells
+            const totalCells = 42;
+            const filledCells = startingDayOfWeek + daysInMonth;
+            for (let i = 0; i < totalCells - filledCells; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('calendar-day');
+                calendarDays.appendChild(dayElement);
+            }
+        }
+        
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        function getCategoryColor(category) {
+            const colors = {
+                'self-care': '#4CAF50',
+                'professional': '#2196F3',
+                'social': '#9C27B0',
+                'family': '#FF9800',
+                'entertainment': '#E91E63',
+                'clubs': '#607D8B'
+            };
+            return colors[category] || '#4b7bf5';
+        }
+        
+        function prevMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar(currentDate);
+        }
+        
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar(currentDate);
+        }
+        
+        function openEventModal() {
+            const modal = document.getElementById('event-modal');
+            modal.style.display = 'flex';
+            
+            // Set default date to today
+            document.getElementById('event-date').value = formatDate(new Date());
+        }
+        
+        function closeEventModal() {
+            const modal = document.getElementById('event-modal');
+            modal.style.display = 'none';
+            document.getElementById('event-form').reset();
+        }
+        
+        function handleEventSubmit(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('event-title').value;
+            const date = document.getElementById('event-date').value;
+            const time = document.getElementById('event-time').value;
+            const category = document.getElementById('event-category').value;
+            const description = document.getElementById('event-description').value;
+            
+            // Create new event
+            const newEvent = {
+                id: events.length + 1,
+                title,
+                date,
+                time,
+                category,
+                description
+            };
+            
+            // Add to events array
+            events.push(newEvent);
+            
+            // Re-render calendar
+            renderCalendar(currentDate);
+            
+            // Close modal
+            closeEventModal();
+        }
+    </script>
+</body>
+</html>
+
+Version 1 of 2
+
